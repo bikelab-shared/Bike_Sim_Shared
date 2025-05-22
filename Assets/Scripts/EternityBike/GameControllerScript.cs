@@ -10,39 +10,9 @@ using MotionSystems;
 using WaypointsFree;
 //using static Unity.Mathematics;
 
-/* 
- * Legacy_lab is the original one with platform and physical sensors
- * EternityBike (aka forschungsfest) is the current working version with the controller on the SteeringWheel
- */
-public enum BikeMode 
-{
-    Legacy_Lab,
-    EternityBike //aka Forschungsfest
-};
-
-/* 
- * Connection-String for TrainingMachine Tacx Flux-2 which connects through BLE supported by the Arduino 
- */
-public static class BikeModeExtensions
-{
-    public static string GetTacxString(this BikeMode mode)
-    {
-        switch (mode)
-        {
-            case BikeMode.Legacy_Lab:
-                return "Tacx Flux-2 36688";
-            case BikeMode.EternityBike:
-                return "Tacx Flux-2 18201";
-            default:
-                return "Bikmode not set";
-        }
-    }
-}
-
 public class GameControllerScript : MonoBehaviour
 {
     #region EternityBike-Modes
-    public BikeMode bikemode;
 
     public enum RealismSupportLevel { OptimizedSupport, NoSupport, FullSupport };
     public RealismSupportLevel currentRealismSupportLevel;
@@ -80,8 +50,6 @@ public class GameControllerScript : MonoBehaviour
 
     public DetectMinMaxLineCollision_version2 detectMinMaxLine;
     #endregion
-
-    public bool loadArduinoWithNewCode = false;
 
     #region Physical-Parameters
     public float SteeringAngle = 0.0f;
@@ -237,14 +205,6 @@ public class GameControllerScript : MonoBehaviour
     }
     private void setUduinoEvent()
     {
-        /*
-       Testing if i can send the bikename at the start
-
-       String[] words2 = bikemode.GetTacxString().Split(' ');
-       UduinoManager.Instance.sendCommand("star", words2[2]);
-        */
-
-        //Uduino
         UduinoManager.Instance.OnDataReceived += UpdateEternityBikeData;
     }
 
@@ -282,6 +242,7 @@ public class GameControllerScript : MonoBehaviour
             Debug.LogError("ForceSeatMI library has not been found! Please install ForceSeatPM.");
         }
     }
+    /** TODO Check if needed*/
     private void setGameObjects()
     {
         {
@@ -331,11 +292,6 @@ public class GameControllerScript : MonoBehaviour
 
     void Update()
     {
-        if (loadArduinoWithNewCode)
-        {
-            testArduino();
-        }
-
         if (logger.isActive())
         {
             elapsed += Time.deltaTime;
@@ -350,14 +306,6 @@ public class GameControllerScript : MonoBehaviour
         UpdateValue(ref m_pitch, Input.GetAxis("Vertical"), DRAWING_PITCH_STEP, -DRAWING_PITCH_MAX, DRAWING_PITCH_MAX);
         UpdateValue(ref m_roll, SteeringAngle, DRAWING_ROLL_STEP, -DRAWING_ROLL_MAX, DRAWING_ROLL_MAX);
         UpdateValue(ref m_heave, Input.GetKey(KeyCode.Space) ? 1 : 0, DRAWING_HEAVE_STEP, 0, DRAWING_HEAVE_MAX);
-
-        //TODO CHECK FUNCTION
-        // if (bikemode == BikeMode.Lab){
-        //UpdateValue(ref m_pitch, -0.5f, DRAWING_PITCH_STEP, -DRAWING_PITCH_MAX, DRAWING_PITCH_MAX); //Veränderung der Steigung
-        //UpdateValue(ref m_roll, Input.GetAxis("Horizontal"), DRAWING_ROLL_STEP, -DRAWING_ROLL_MAX, DRAWING_ROLL_MAX);
-        //UpdateValue(ref m_roll, 0.8f, DRAWING_ROLL_STEP, -DRAWING_ROLL_MAX, DRAWING_ROLL_MAX);
-        //UpdateValue(ref m_heave, Input.GetKey(KeyCode.Space) ? 1 : 0, DRAWING_HEAVE_STEP, 0, DRAWING_HEAVE_MAX);
-        // }
     }
 
     private void handleInput()
@@ -450,25 +398,6 @@ public class GameControllerScript : MonoBehaviour
 
             SendDataToFSMIPlatform();
         }
-    }
-
-    private void testArduino()
-    {
-        // for testing issues
-
-        /*String[] words = bikemode.GetTacxString().Split(' ');
-         UduinoManager.Instance.sendCommand("setTacx0", words[0]);
-         UduinoManager.Instance.sendCommand("setTacx1", words[1]);
-         UduinoManager.Instance.sendCommand("setTacx2", words[2]);*/
-
-        String[] words = bikemode.GetTacxString().Split(' ');
-        // Debug.Log("TACX: " + words[2]);
-        UduinoManager.Instance.sendCommand("tacx", words[2]);
-
-
-        //UduinoManager.Instance.CloseAllDevices();
-        //UduinoManager.Instance.DiscoverPorts();
-        // TODO deactivate bike until everything is set up!
     }
 
     private void UpdateValue(ref float value, float input, float step, float min, float max)
@@ -583,27 +512,14 @@ public class GameControllerScript : MonoBehaviour
             if (controller_mode)
             {
                 float vertical = Input.GetAxis("Horizontal");
-                if (bikemode == BikeMode.EternityBike)
-                {
-                    iSteeringAngle = Math.Max(Math.Min(vertical, 1.0f), -1.0f) * 180;
-                }
-                else if (bikemode == BikeMode.Legacy_Lab) {
-                    iSteeringAngle = Math.Max(Math.Min(vertical, 1.0f), -1.0f) * 90;
-                }
+                iSteeringAngle = Math.Max(Math.Min(vertical, 1.0f), -1.0f) * 180;
             }
             else
             {
-                if (bikemode == BikeMode.EternityBike)
-                {
-                    iSteeringAngle = BikeControllerScript.steeringAngle; // -90, 0, +90
-                }
-                else if (bikemode == BikeMode.Legacy_Lab)
-                {
-                    iSteeringAngle = float.Parse(values[1]);
-                }
+                iSteeringAngle = BikeControllerScript.steeringAngle; // -90, 0, +90
             }
 
-            if (bikemode == BikeMode.EternityBike & values.Length > 1) {
+            if (values.Length > 1) {
 
                 if (iSteeringAngle < 0)
                 {
@@ -633,8 +549,8 @@ public class GameControllerScript : MonoBehaviour
                 //Debug.Log("Velocity: " + Velocity + " SteeringAngle: " + iSteeringAngle + " SteeringAngle: " + SteeringAngle);
 
                 //TODO FIX BRAKES
-                //float FrontBrakeForce = 0;//float.Parse(values[2]);
-                //float RearBrakeForce = 0;//float.Parse(values[3]);
+                float FrontBrakeForce = float.Parse(values[2]);
+                float RearBrakeForce = float.Parse(values[3]);
 ;
                 float CombinedBrakeForce;
                  if (controller_mode)
@@ -657,78 +573,7 @@ public class GameControllerScript : MonoBehaviour
                 PitchPosition = activeCalculationModel.calculatePitch(Bicycle.transform.forward, appliedBrakeForce);
                 RollPosition = activeCalculationModel.calculateTilt(Velocity, SteeringAngle);
 
-                //Debug.Log("Velocity: " + Velocity + " SteeringAngle: " + iSteeringAngle + " SteeringAngle: " + SteeringAngle + " FrontBrakeForce: " + FrontBrakeForce + " RearBrakeForce: " + RearBrakeForce + " CombinedBrakeForce: " + CombinedBrakeForce + " Resistance: " + Resistance);
-
-                if (logger.isActive() && elapsed > logger.frequency)
-                {
-                    logger.log(this, elapsed, Velocity, PitchPosition, RollPosition, appliedBrakeForce, Resistance);
-                    elapsed = 0;
-                }
-
-            }
-            else if (bikemode == BikeMode.Legacy_Lab)
-            {
-                // Dectect negativ Steering Angle
-                if (iSteeringAngle > 450)
-                {
-                    String RemoveAscii = iSteeringAngle.ToString();
-                    RemoveAscii = RemoveAscii.Substring(2);
-                    iSteeringAngle = float.Parse(RemoveAscii);
-                    Sign = -1;
-                    iSteeringAngle = iSteeringAngle * Sign;
-                    // Debug.Log("iSteeringAngle in 450: " + iSteeringAngle);
-                }
-                else
-                {
-                    Sign = 1;
-                }
-
-                if (iSteeringAngle <= -90)
-                {
-                    iSteeringAngle = -90;
-                }
-                else if (iSteeringAngle >= 90)
-                {
-                    iSteeringAngle = 90;
-                }
-
-                ISteeringAngle = iSteeringAngle;
-
-                SteeringAngle = iSteeringAngle.Remap(-90, 90, -1.0f, 1.0f);
-                SteeringAngle = (float)Math.Round(SteeringAngle * 100f) / 100f;
-
-                float FrontBrakeForce = float.Parse(values[2]);
-                float RearBrakeForce = float.Parse(values[3]);
-
-                float CombinedBrakeForce;
-                if (controller_mode)
-                {
-                    var hor2 = Input.GetAxis("Horizontal2");
-                    // Debug.Log("combinedbf before: " + hor2);
-                    CombinedBrakeForce = hor2 * 200;
-                    if (CombinedBrakeForce < 0)
-                    {
-                        CombinedBrakeForce *= -1;
-                    }
-                }
-                else
-                {
-                    CombinedBrakeForce = float.Parse(values[4]);
-                }
-                // Debug.Log("combinedbf: " + CombinedBrakeForce);
-
-
-                float Resistance = float.Parse(values[5]);
-
-                //APPLY PARSED DATA
-
-                var activeCalculationModel = calculationModelRegistry[activeCalculationModelIndex];
-
-                appliedBrakeForce = activeCalculationModel.calculateBreakForce(BikeSpeed, CombinedBrakeForce);
-                PitchPosition = activeCalculationModel.calculatePitch(Bicycle.transform.forward, appliedBrakeForce);
-                RollPosition = activeCalculationModel.calculateTilt(Velocity, SteeringAngle);
-
-                Debug.Log("Velocity: " + Velocity + " SteeringAngle: " + iSteeringAngle + " SteeringAngle: " + SteeringAngle + " FrontBrakeForce: " + FrontBrakeForce + " RearBrakeForce: " + RearBrakeForce + " CombinedBrakeForce: " + CombinedBrakeForce + " Resistance: " + Resistance);
+                Debug.LogError("Velocity: " + Velocity + " SteeringAngle: " + iSteeringAngle + " SteeringAngle: " + SteeringAngle + " FrontBrakeForce: " + FrontBrakeForce + " RearBrakeForce: " + RearBrakeForce + " CombinedBrakeForce: " + CombinedBrakeForce + " Resistance: " + Resistance);
 
                 if (logger.isActive() && elapsed > logger.frequency)
                 {
@@ -736,12 +581,6 @@ public class GameControllerScript : MonoBehaviour
                     elapsed = 0;
                 }
             }
-        }
-        else if (device.name.Equals("MotorBoard")) {
-            Debug.Log("phys Switch general read: " + data);
-            if (data.Equals("0") || data.Equals("0"))
-                Debug.Log("phys Switch read: " + data);
-                detectMinMaxLine.physicalSwitch = Int32.Parse(data);
         }
     }
 
