@@ -50,8 +50,6 @@ public class HandleBarCollider : MonoBehaviour
     private bool timerStarted = false;
     private bool passedFinishLine = false;
 
-    private int[] busCollide = new int[4];
-    private int[] busPredictionCollisions = new int[8];
     private bool camIsSet = false;
 
     public GameObject finishCube;
@@ -59,8 +57,6 @@ public class HandleBarCollider : MonoBehaviour
     public TextMeshPro endText;
 
     [SerializeField] public GameObject vrCamera, screenCamera;
-    public GameObject[] buses = new GameObject[4];
-    public GameObject[] busPredictions = new GameObject[8];
 
 
     public GameObject startline;

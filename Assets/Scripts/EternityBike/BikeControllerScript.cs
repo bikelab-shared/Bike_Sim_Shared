@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using UnityEngine;
 using MotionSystems;
 using WaypointsFree;
+using System;
 
 public class BikeControllerScript : MonoBehaviour
 {
-    private Bike bikeModel;
     private string handlebar_parent;
 
     public GameObject BikeBase;
@@ -16,54 +16,42 @@ public class BikeControllerScript : MonoBehaviour
     public GameObject leftController;
 
     private Transform handlebar;
-    private Vector3 handlebarInit;
+    private Vector3 initialHandlebarPosition;
     private Quaternion initalHandlebarRotation, initialControllerRotation;
     public static float steeringAngle = 0.0f;
 
-    GameControllerScript gameControllerScript;
-    HandleBarCollider handleBarColliderScript;
+    private GameControllerScript gameControllerScript;
+    private HandleBarCollider handleBarColliderScript;
+    private Bike bikeModel;
 
     public Quaternion initialBikeRotation;
-
-
-    //public GameObject ProceedingBike;    //get component from SpeedMapper script
 
 
     // Start is called before the first frame update
     void Start()
     {
+        setupScripts();
+        initalizeHandlebar();
+    }
 
+    private void setupScripts()
+    {
         gameControllerScript = BikeBase.GetComponent<GameControllerScript>();
-
         //handleBarColliderScript = HandleBar.GetComponent<HandleBarCollider>();
         //bikeModel = handleBarColliderScript.bikemodel;
+    }
 
-        //handlebar = this.transform.Find("WheelHandleBar");
-        //handlebar = GameObject.FindGameObjectWithTag("HandleBar").transform;
-        //handlebarInit = new Vector3(handlebar.rotation.x, handlebar.rotation.y, handlebar.rotation.z);
-        //Debug.Log("inithandle: " + handlebarInit);
-
+    private void initalizeHandlebar()
+    {
         handlebar = GameObject.FindGameObjectWithTag("HandleBar").transform;
-        handlebarInit = new Vector3(handlebar.rotation.x, handlebar.rotation.y, handlebar.rotation.z);
+        initialHandlebarPosition = new Vector3(handlebar.rotation.x, handlebar.rotation.y, handlebar.rotation.z);
+        initalHandlebarRotation = Quaternion.Euler(new Vector3(0, 0, 0));  //Sonst wieder rein
+        initialControllerRotation = leftController.transform.rotation;
+        Debug.Log("inithandle: " + initialHandlebarPosition);
+        //TODO Check if Rotation is right from start
+
         handlebar_parent = handlebar.parent.name.ToString();
         Debug.Log("parent: " + handlebar.parent);
-
-        // TEST SONJA 30.09.2024 BUG: wenn man eternity bike dreht / rotiert, stimmt lenkung nichtmehr
-        //initalHandlebarRotation = handlebar.transform.rotation;
-        //Debug.Log("inithandlebarrotation: " + initalHandlebarRotation); normal 0,0,0,1 
-        //                                                                racing 0.8,0,0,0.6
-        //initialBikeRotation = BikeBase.transform.localRotation;
-
-        // Get the bike's initial rotation
-        // initialBikeRotation = transform.rotation;
-
-        // Set the initial handlebar rotation to counteract the bike's rotation so it looks straight
-        // initalHandlebarRotation = Quaternion.Inverse(transform.rotation) * handlebar.transform.rotation;
-
-
-        initalHandlebarRotation = Quaternion.Euler(new Vector3(0, 0, 0));  //Sonst wieder rein
-        initialControllerRotation = leftController.transform.rotation; 
-
     }
 
     // Update is called once per frame
@@ -72,23 +60,8 @@ public class BikeControllerScript : MonoBehaviour
         
         if (BikeBase != null)
         {
-            GameControllerScript p = BikeBase.GetComponent<GameControllerScript>();
-
             var rgb = this.GetComponent<Rigidbody>();
-
-            /*if (ProceedingBike.GetComponent<SpeedMapper>().IsSpeedMapped == true)
-            {
-                rgb.velocity = (transform.forward * ProceedingBike.GetComponent<WaypointsTravelBike>().MoveSpeedKmH) * (Time.deltaTime * 2f);
-
-                Debug.Log("Bikes are chained.");
-            }
-
-            else if(ProceedingBike.GetComponent<SpeedMapper>().IsSpeedMapped != true)
-            {
-                rgb.velocity = (transform.forward * p.BikeSpeed) * (Time.deltaTime * 2f);
-            }*/
-
-            rgb.velocity = (transform.forward * p.BikeSpeed) * (Time.deltaTime * 2f);
+            rgb.velocity = (transform.forward * gameControllerScript.BikeSpeed) * (Time.deltaTime * 2f);
 
             if (handlebar != null)
             {
@@ -137,69 +110,31 @@ public class BikeControllerScript : MonoBehaviour
                 }
                 */
 
-                // Todo fix this!
-                /*if (Input.GetKeyDown("h"))
-                { //If you press c
-                    Debug.Log("Reset handlebarrotation");
-                    handlebar.transform.rotation = new Quaternion(0.0f, 0.0f, 0.0f, 0.0f);
-                    leftController.transform.rotation = new Quaternion(0.0f, 0.0f, 0.0f, 0.0f);
-                    set = false;
-                }*/
-
-                //TEST 
-
-                //---------------
-
-
-                //handlebar.transform.rotation = initialControllerRotation * rightController.transform.rotation * initalHandlebarRotation;
-
                 //TEST 235  wieder rein
-                steeringAngle = (Quaternion.Inverse(transform.rotation) * initialControllerRotation * leftController.transform.rotation * initalHandlebarRotation).eulerAngles.y; // 0 to 360 degrees
-                                                                                                                                                                                  //handlebar.transform.rotation = Quaternion.Euler(0.0f, steeringAngle, 0.0f);
+                // 0 to 360 degrees
+                //handlebar.transform.rotation = Quaternion.Euler(0.0f, steeringAngle, 0.0f);
+                steeringAngle = (Quaternion.Inverse(transform.rotation) * initialControllerRotation * leftController.transform.rotation * initalHandlebarRotation).eulerAngles.y; 
                 Debug.LogWarning("checking formula: steeringangle before maping: " + steeringAngle);
                 Debug.LogWarning("checking formula: leftcontrollerrotation: " + leftController.transform.rotation);
                 Debug.LogWarning("checking formula: initialControllerRotation: " + initialControllerRotation);
                 Debug.LogWarning("checking formula: initalHandlebarRotation: " + initalHandlebarRotation);
-                // fixedUpdate
-
-
-                //steeringAngle = steeringAngle.Remap(0, 360, 120.89f,-120.89f);
-                //steeringAngle = steeringAngle.Remap(0, 360, 90, -90);
 
                 if (steeringAngle > 90 && steeringAngle <= 180)
-                {  //beschränkung rechts
+                {  //restriction right
                     steeringAngle = 90;
                 }
                 else if (steeringAngle > 180 && steeringAngle < 270)
-                { //beschränkung links
+                { //restriction left
                     steeringAngle = -90;
                 }
                 else if (steeringAngle >= 270 && steeringAngle <= 360)
-                {  //eigenes Remap links
+                {  //own remaping
                     steeringAngle = steeringAngle - 360;
                 }
 
-                Debug.Log("parent: " + handlebar_parent);
-                if (handlebar_parent.Equals("helper_LOD_Rbike_body"))
-                {
-                    var steeringVec = new Vector3(-106.271f, steeringAngle, 0.0f);
-                    Debug.Log("steeringvec: " + steeringVec);
-                    //handlebar.transform.rotation = Quaternion.Euler(steeringVec);
-                    handlebar.transform.localEulerAngles = steeringVec;
-                }
-                else if (handlebar_parent.Equals("EternityBike_Cargo"))
-                {
-                    var steeringVec = new Vector3(0.0f, steeringAngle, 0.0f);
-                    Debug.Log("Cargo steeringvec: " + steeringVec);
-                }
-                else
-                {
-                    var steeringVec = new Vector3(0.0f, steeringAngle, 0.0f);
-                    //var steeringVec = new Vector3(handlebar.rotation.x, steeringAngle, handlebar.rotation.z);
-                    handlebar.transform.localEulerAngles = steeringVec;
-                }
-
-
+                var steeringVec = new Vector3(0.0f, steeringAngle, 0.0f);
+                //var steeringVec = new Vector3(handlebar.rotation.x, steeringAngle, handlebar.rotation.z);
+                handlebar.transform.localEulerAngles = steeringVec;
 
                 Debug.LogWarning("!!!!! steeringangle new: " + steeringAngle);
 
@@ -207,7 +142,7 @@ public class BikeControllerScript : MonoBehaviour
                 float turnRadius = wheelbase / (Mathf.Sin(Mathf.Abs(steeringAngle) * Mathf.Deg2Rad));
 
                 //-------------
-                p.ICurveRadius = turnRadius;
+                gameControllerScript.ICurveRadius = turnRadius;
                 //----------------
 
                 if (turnRadius > 85)
@@ -239,7 +174,7 @@ public class BikeControllerScript : MonoBehaviour
                     sign = 1;
                 }
 
-                float speedInMS = p.BikeSpeed / 3.6f;
+                float speedInMS = gameControllerScript.BikeSpeed / 3.6f;
 
 
                 Debug.LogWarning("after turningCenterCurve: " + turningCenterCurve);

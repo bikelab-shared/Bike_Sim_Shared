@@ -573,7 +573,7 @@ public class GameControllerScript : MonoBehaviour
                 PitchPosition = activeCalculationModel.calculatePitch(Bicycle.transform.forward, appliedBrakeForce);
                 RollPosition = activeCalculationModel.calculateTilt(Velocity, SteeringAngle);
 
-                Debug.LogError("Velocity: " + Velocity + " SteeringAngle: " + iSteeringAngle + " SteeringAngle: " + SteeringAngle + " FrontBrakeForce: " + FrontBrakeForce + " RearBrakeForce: " + RearBrakeForce + " CombinedBrakeForce: " + CombinedBrakeForce + " Resistance: " + Resistance);
+                //Debug.LogError("Velocity: " + Velocity + " SteeringAngle: " + iSteeringAngle + " SteeringAngle: " + SteeringAngle + " FrontBrakeForce: " + FrontBrakeForce + " RearBrakeForce: " + RearBrakeForce + " CombinedBrakeForce: " + CombinedBrakeForce + " Resistance: " + Resistance);
 
                 if (logger.isActive() && elapsed > logger.frequency)
                 {
