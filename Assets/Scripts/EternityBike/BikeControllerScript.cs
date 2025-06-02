@@ -54,10 +54,8 @@ public class BikeControllerScript : MonoBehaviour
         Debug.Log("parent: " + handlebar.parent);
     }
 
-    // Update is called once per frame
     void Update()
     {
-        
         if (BikeBase != null)
         {
             var rgb = this.GetComponent<Rigidbody>();
@@ -65,7 +63,7 @@ public class BikeControllerScript : MonoBehaviour
 
             if (handlebar != null)
             {
-
+                #region legacy-tilting
                 /*
                 //  this.transform.localEulerAngles = rotationVec;
 
@@ -109,93 +107,89 @@ public class BikeControllerScript : MonoBehaviour
 
                 }
                 */
+                #endregion
 
-                //TEST 235  wieder rein
-                // 0 to 360 degrees
-                //handlebar.transform.rotation = Quaternion.Euler(0.0f, steeringAngle, 0.0f);
-                steeringAngle = (Quaternion.Inverse(transform.rotation) * initialControllerRotation * leftController.transform.rotation * initalHandlebarRotation).eulerAngles.y; 
-                Debug.LogWarning("checking formula: steeringangle before maping: " + steeringAngle);
-                Debug.LogWarning("checking formula: leftcontrollerrotation: " + leftController.transform.rotation);
-                Debug.LogWarning("checking formula: initialControllerRotation: " + initialControllerRotation);
-                Debug.LogWarning("checking formula: initalHandlebarRotation: " + initalHandlebarRotation);
-
-                if (steeringAngle > 90 && steeringAngle <= 180)
-                {  //restriction right
-                    steeringAngle = 90;
-                }
-                else if (steeringAngle > 180 && steeringAngle < 270)
-                { //restriction left
-                    steeringAngle = -90;
-                }
-                else if (steeringAngle >= 270 && steeringAngle <= 360)
-                {  //own remaping
-                    steeringAngle = steeringAngle - 360;
-                }
-
-                var steeringVec = new Vector3(0.0f, steeringAngle, 0.0f);
-                //var steeringVec = new Vector3(handlebar.rotation.x, steeringAngle, handlebar.rotation.z);
-                handlebar.transform.localEulerAngles = steeringVec;
-
-                Debug.LogWarning("!!!!! steeringangle new: " + steeringAngle);
-
-                float wheelbase = 1.5f;
-                float turnRadius = wheelbase / (Mathf.Sin(Mathf.Abs(steeringAngle) * Mathf.Deg2Rad));
-
-                //-------------
-                gameControllerScript.ICurveRadius = turnRadius;
-                //----------------
-
-                if (turnRadius > 85)
-                {
-                    turnRadius = Mathf.Infinity;
-                }
-
-
-
-                Debug.LogWarning("turning: steeringangle after radius: " + steeringAngle);
-                Debug.LogWarning("turning: TurnRadius: " + turnRadius);
-                Debug.LogWarning("turning: Transform position: " + transform.position);
-                Debug.LogWarning("turning: Transform right: " + transform.right.normalized);
-
-                Vector3 turningCenterCurve = (transform.position + (transform.right.normalized * turnRadius));
-
-                int sign = 0; // curve direction 
-
-                Debug.LogWarning("before turningCenterCurve: " + turningCenterCurve);
-
-                if (steeringAngle < 0) // left
-                {
-                    Vector3 curDirection = turningCenterCurve - transform.position;
-                    turningCenterCurve = transform.position - curDirection;
-                    sign = -1;
-                }
-                else if (steeringAngle > 0) // right
-                {
-                    sign = 1;
-                }
-
-                float speedInMS = gameControllerScript.BikeSpeed / 3.6f;
-
-
-                Debug.LogWarning("after turningCenterCurve: " + turningCenterCurve);
-
-                Debug.LogWarning("speedInMS: " + speedInMS);
-
-                if (steeringAngle != 0 && turnRadius != Mathf.Infinity) // curve
-                {
-                    //this.transform.RotateAround(turningCenterCurve, Vector3.up, sign * ((speedInMS * 1f) / (2f * Mathf.PI * turnRadius) * 360f) * Time.deltaTime);
-                    this.transform.RotateAround(turningCenterCurve, Vector3.up, sign * ((speedInMS * 1f) / (2f * Mathf.PI * turnRadius) * 360f) * Time.deltaTime);
-
-                }
-                else // straight ahead
-                {
-                    this.transform.position = transform.position + transform.forward * Time.deltaTime * speedInMS;
-
-                }
+                ApplySteering();
+                ApplyVisualTilting();
+                MoveBikeAlongTurn();
             }
         }
     }
 
+    private void ApplySteering()
+    {
+        // 0 to 360 degrees
+        steeringAngle = (Quaternion.Inverse(transform.rotation) * initialControllerRotation * leftController.transform.rotation * initalHandlebarRotation).eulerAngles.y;
+        Debug.LogWarning("checking formula: steeringangle before maping: " + steeringAngle);
+        Debug.LogWarning("checking formula: leftcontrollerrotation: " + leftController.transform.rotation);
+        Debug.LogWarning("checking formula: initialControllerRotation: " + initialControllerRotation);
+        Debug.LogWarning("checking formula: initalHandlebarRotation: " + initalHandlebarRotation);
+        
+        if (steeringAngle > 90 && steeringAngle <= 180)
+        {
+            steeringAngle = 90;
+        }
+        else if (steeringAngle > 180 && steeringAngle < 270)
+        {
+            steeringAngle = -90;
+        }
+        else if (steeringAngle >= 270 && steeringAngle <= 360)
+        {
+            steeringAngle -= 360;
+        }     
+
+        var steeringVec = new Vector3(0.0f, steeringAngle, 0.0f);
+        handlebar.transform.localEulerAngles = steeringVec;
+    }
+
+    private void ApplyVisualTilting()
+    {
+        float tiltFactor = gameControllerScript.RollMultiplier;
+        float tiltAngle = -gameControllerScript.ITiltAngle;
+
+        if (tiltFactor != 0)
+        {
+            Vector3 targetTilt = new Vector3(transform.localEulerAngles.x, transform.localEulerAngles.y, tiltAngle);
+            transform.localEulerAngles = Vector3.Lerp(transform.localEulerAngles, targetTilt, Time.deltaTime * 5f);
+        }
+    }
+
+    private void MoveBikeAlongTurn()
+    {
+        float wheelbase = 1.5f;
+        float turnRadius = wheelbase / (Mathf.Sin(Mathf.Abs(steeringAngle) * Mathf.Deg2Rad));
+
+        //Update Radius in other Script
+        gameControllerScript.ICurveRadius = turnRadius;
+
+        if (turnRadius > 85)
+            turnRadius = Mathf.Infinity;
+
+        Vector3 turningCenterCurve = (transform.position + (transform.right.normalized * turnRadius));
+        int sign = 0;
+
+        if (steeringAngle < 0)
+        {
+            Vector3 curDirection = turningCenterCurve - transform.position;
+            turningCenterCurve = transform.position - curDirection;
+            sign = -1;
+        }
+        else if (steeringAngle > 0)
+        {
+            sign = 1;
+        }
+
+        float speedInMS = gameControllerScript.BikeSpeed / 3.6f;
+
+        if (steeringAngle != 0 && turnRadius != Mathf.Infinity) // curve
+        {
+            transform.RotateAround(turningCenterCurve, Vector3.up, sign * ((speedInMS * 1f) / (2f * Mathf.PI * turnRadius) * 360f) * Time.deltaTime);
+        }
+        else
+        {
+            transform.position = transform.position + transform.forward * Time.deltaTime * speedInMS;
+        }
+    }
     /*void OnCollisionEnter(Collision collision)
     {
         Debug.Log("IN COLLISION ENTER");
@@ -207,6 +201,8 @@ public class BikeControllerScript : MonoBehaviour
         Debug.Log("IN COLLISION EXIT");
         set = false;
     }*/
-
 }
+
+
+
 
