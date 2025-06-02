@@ -37,8 +37,8 @@ public class BikeControllerScript : MonoBehaviour
     private void setupScripts()
     {
         gameControllerScript = BikeBase.GetComponent<GameControllerScript>();
-        //handleBarColliderScript = HandleBar.GetComponent<HandleBarCollider>();
-        //bikeModel = handleBarColliderScript.bikemodel;
+        handleBarColliderScript = HandleBar.GetComponent<HandleBarCollider>();
+        bikeModel = handleBarColliderScript.bikemodel;
     }
 
     private void initalizeHandlebar()
@@ -63,55 +63,8 @@ public class BikeControllerScript : MonoBehaviour
 
             if (handlebar != null)
             {
-                #region legacy-tilting
-                /*
-                //  this.transform.localEulerAngles = rotationVec;
-
-                //var tiltVec = new Vector3(transform.localEulerAngles.x, transform.localEulerAngles.y, -p.ITiltAngle*2);
-                var tiltVec = new Vector3(transform.localEulerAngles.x, transform.localEulerAngles.y, -p.ITiltAngle);
-                if (p.RollMultiplier != 0 || 1 == 1)
-                {
-                    // maybe we add the slerp here to reduce the statter
-
-                    //tiltVec is our TARGET, IF WE ARE NOT ALREADY AT THE TARGET; LETS MOVE THERE (INTERPOLATED IN 0.2 SECONDS)
-
-                      if (-p.ITiltAngle != Mathf.RoundToInt(this.transform.localEulerAngles.z))
-                       {
-
-                           lastTiltVec += Time.deltaTime;
-                           Vector3 euler = this.transform.localEulerAngles;
-                           // euler.z = Mathf.Lerp(transform.localEulerAngles.z-p.ITiltAngle, -p.ITiltAngle, Time.deltaTime);
-                           if(-p.ITiltAngle>=this.transform.localEulerAngles.z)
-                               euler.z = Mathf.Lerp(euler.z, -p.ITiltAngle, lastTiltVec);
-
-                           this.transform.localEulerAngles = euler;
-                       }
-                       else
-                       {
-                           lastTiltVec = 0;
-                       }
-
-                    this.transform.localEulerAngles = tiltVec;
-
-                //float angle = Mathf.LerpAngle(0, -p.ITiltAngle, Time.time);
-                //this.transform.localEulerAngles = new Vector3(0, angle, 0);
-
-                //this.transform.localEulerAngles=Vector3.Slerp(this.transform.localEulerAngles, tiltVec, Time.deltaTime);
-
-                //this.transform.localEulerAngles = Vector3.Lerp(this.transform.localEulerAngles,tiltVec, 0.1F);
-
-                // var _targetRotation = Quaternion.Euler(tiltVec);
-                // this.transform.rotation = Quaternion.RotateTowards(this.transform.rotation, _targetRotation, 1 * Time.deltaTime);
-
-                // Debug.Log(tiltVec);
-
-                }
-                */
-                #endregion
-
                 ApplySteering();
-                ApplyBikeVisualTilting();
-                ApplyCameraVisualTilting();
+                ApplyVisualTiltingCamera();
                 MoveBikeAlongTurn();
             }
         }
@@ -143,19 +96,7 @@ public class BikeControllerScript : MonoBehaviour
         handlebar.transform.localEulerAngles = steeringVec;
     }
 
-    private void ApplyBikeVisualTilting()
-    {
-        float tiltFactor = gameControllerScript.RollMultiplier;
-        float tiltAngle = -gameControllerScript.ITiltAngle;
-
-        if (tiltFactor != 0)
-        {
-            Vector3 targetTilt = new Vector3(transform.localEulerAngles.x, transform.localEulerAngles.y, tiltAngle);
-            transform.localEulerAngles = Vector3.Lerp(transform.localEulerAngles, targetTilt, Time.deltaTime * 5f);
-        }
-    }
-
-    private void ApplyCameraVisualTilting()
+    private void ApplyVisualTiltingCamera()
     {
         float tiltAngle = -gameControllerScript.ITiltAngle; // invert if needed for correct direction
         float tiltSpeed = 5f; // adjust for smoothness

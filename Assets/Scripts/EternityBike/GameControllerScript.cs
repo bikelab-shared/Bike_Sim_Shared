@@ -69,14 +69,14 @@ public class GameControllerScript : MonoBehaviour
     #region GameObjects
     private GameObject Bicycle = null;
 
-    Transform[] routes = null;
-    Transform[] spawnPoints = null;
+    private Transform[] routes = null;
+    private Transform[] spawnPoints = null;
 
-    int currentRoute = 0;
-    int currentSpawnPoint = 0;
+    private int currentRoute = 0;
+    private int currentSpawnPoint = 0;
 
     public int level = 0;
-    const int max_levels = 6;
+    private const int max_levels = 6;
 
     #endregion
 
@@ -245,6 +245,8 @@ public class GameControllerScript : MonoBehaviour
     /** TODO Check if needed*/
     private void setGameObjects()
     {
+        /* 
+        //unused in current project
         {
             var routesRoot = GameObject.Find("Routes");
 
@@ -272,6 +274,7 @@ public class GameControllerScript : MonoBehaviour
                 spawnPoints[i - 1] = tmp[i];
             }
         }
+        */
         var bike = GameObject.Find("EternityBike");
     }
     void loadLevel(int ind)

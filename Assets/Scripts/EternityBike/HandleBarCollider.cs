@@ -85,7 +85,7 @@ public class HandleBarCollider : MonoBehaviour
         float distance = Vector3.Distance(this.transform.position, sphere.transform.position);
         Debug.Log("DISTANCE SPHERE AND BIKE: " + distance);
 
-        finishCube.SetActive(false);
+        finishCube.SetActive(true);
 
         UduinoManager.Instance.OnDataReceived += DetectedBoard;
 
