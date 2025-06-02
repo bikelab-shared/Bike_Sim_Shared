@@ -29,8 +29,6 @@ public class HandleBarCollider : MonoBehaviour
     public String participantID;
     [SerializeField] public Condition currentCondition;
     public Bike bikemodel;
-    [SerializeField] public bool BusPrediction;
-    public bool BusMode = true;
 
     [SerializeField] public bool lanekeeping;
     [SerializeField] public bool lanecentering;
@@ -92,32 +90,19 @@ public class HandleBarCollider : MonoBehaviour
         Debug.Log("DISTANCE SPHERE AND BIKE: " + distance);
 
         finishCube.SetActive(false);
-        if (BusMode == false)
-        {
-            foreach (GameObject gameObject in buses)
-            {
-                gameObject.SetActive(false);
-            }
-        }
-        UduinoManager.Instance.OnDataReceived += DetectedBoard;
 
-        if (!BusPrediction)
-        {
-            foreach (GameObject item in busPredictions)
-            {
-                item.SetActive(false);
-            }
-        }
+        UduinoManager.Instance.OnDataReceived += DetectedBoard;
 
         if (lanekeeping == true)
         {
             lanecentering = false;
-           // lanecenteringSphere.GetComponent<SphereCollider>().enabled = false;
+            // lanecenteringSphere.GetComponent<SphereCollider>().enabled = false;
 
         }
-        else if (lanecentering == true) {
+        else if (lanecentering == true)
+        {
             lanekeeping = false;
-           // lanecenteringSphere.GetComponent<SphereCollider>().enabled = true;
+            // lanecenteringSphere.GetComponent<SphereCollider>().enabled = true;
         }
 
 
@@ -164,113 +149,11 @@ public class HandleBarCollider : MonoBehaviour
             passedFinishLine = true;
             endText.SetText("FINISHED \n\n Balls collected: " + ballCounter + "\n Time: " + roundTime);
         }
-        // TODO pred collision!!!
-        if (collider.tag.StartsWith("bus"))
-        {
-            if (collider.tag.Equals("bus1"))
-            {
-                busCollide[0]++;
-            }
-            else if (collider.tag.Equals("bus2"))
-            {
-                busCollide[1]++;
-            }
-            else if (collider.tag.Equals("bus3"))
-            {
-                busCollide[2]++;
-            }
-            else if (collider.tag.Equals("bus4"))
-            {
-                busCollide[3]++;
-            }
-        }
-        if (collider.tag.StartsWith("startBus"))
-        {
-            if (collider.tag.Equals("startBus1"))
-            {
-                buses[0].GetComponent<WaypointsFree.WaypointsTraveler>().Move(true);
-                if (BusPrediction)
-                {
-                    busPredictions[0].GetComponent<WaypointsFree.WaypointsTraveler>().Move(true);
-                    busPredictions[1].GetComponent<WaypointsFree.WaypointsTraveler>().Move(true);
-                }
-            }
-            else if (collider.tag.Equals("startBus2"))
-            {
-                buses[1].GetComponent<WaypointsFree.WaypointsTraveler>().Move(true);
-                if (BusPrediction)
-                {
-                    busPredictions[2].GetComponent<WaypointsFree.WaypointsTraveler>().Move(true);
-                    busPredictions[3].GetComponent<WaypointsFree.WaypointsTraveler>().Move(true);
-                }
-
-            }
-            else if (collider.tag.Equals("startBus3"))
-            {
-                buses[2].GetComponent<WaypointsFree.WaypointsTraveler>().Move(true);
-                if (BusPrediction)
-                {
-                    busPredictions[4].GetComponent<WaypointsFree.WaypointsTraveler>().Move(true);
-                    busPredictions[5].GetComponent<WaypointsFree.WaypointsTraveler>().Move(true);
-                }
-            }
-            else if (collider.tag.Equals("startBus4"))
-            {
-                buses[3].GetComponent<WaypointsFree.WaypointsTraveler>().Move(true);
-                if (BusPrediction)
-                {
-                    busPredictions[6].GetComponent<WaypointsFree.WaypointsTraveler>().Move(true);
-                    busPredictions[7].GetComponent<WaypointsFree.WaypointsTraveler>().Move(true);
-                }
-            }
-
-        }
-
-        if (BusPrediction == true) {
-            if (collider.tag.Equals("prediction_front_bus1")) {
-                busPredictionCollisions[0]++;
-            }
-            else if (collider.tag.Equals("prediction_back_bus1"))
-            {
-                busPredictionCollisions[1]++;
-                Debug.Log("Collide Bus 1 back!");
-            }
-
-            else if (collider.tag.Equals("prediction_front_bus2"))
-            {
-                busPredictionCollisions[2]++;
-            }
-            else if (collider.tag.Equals("prediction_back_bus2"))
-            {
-                busPredictionCollisions[3]++;
-            }
-
-            else if (collider.tag.Equals("prediction_front_bus4"))
-            {
-                busPredictionCollisions[4]++;
-            }
-            else if (collider.tag.Equals("prediction_back_bus4"))
-            {
-                busPredictionCollisions[5]++;
-            }
-
-            else if (collider.tag.Equals("prediction_front_bus5"))
-            {
-                busPredictionCollisions[6]++;
-            }
-            else if (collider.tag.Equals("prediction_back_bus5"))
-            {
-                busPredictionCollisions[7]++;
-            }
-
-        }
 
         if (collider.tag.Equals("finished"))
         {
             QuitApplication();
         }
-
-
 
 
         if (startLine.GetComponent<startLineScript>() != null)
@@ -323,7 +206,7 @@ public class HandleBarCollider : MonoBehaviour
 
             // Min Wert der Liste hinzufügen
             String filepath = "C:/Users/Bikelab/Desktop/Study_RealismVsSim/Logfiles/";
-               filepath = filepath + participantID + "_" + timeStamp + ".csv";
+            filepath = filepath + participantID + "_" + timeStamp + ".csv";
 
             if (writeDataFile == true)
             {
@@ -331,7 +214,7 @@ public class HandleBarCollider : MonoBehaviour
                 if (timerStarted || passedFinishLine)
                 {
 
-                    addData(BusMode, BusPrediction, busPredictionCollisions, busCollide, currentCondition, timerStarted, roundTime, participantID, ballCounter, ballIndex, ballDistanceMin, ballDistanceMinVelocity, ballDistanceMinSteeringAngle,bikemodel, distractionTask, lanekeeping, lanecentering, keypress, @filepath);
+                    addData(currentCondition, timerStarted, roundTime, participantID, ballCounter, ballIndex, ballDistanceMin, ballDistanceMinVelocity, ballDistanceMinSteeringAngle, bikemodel, distractionTask, lanekeeping, lanecentering, keypress, @filepath);
                     passedFinishLine = false;
                 }
             }
@@ -343,48 +226,48 @@ public class HandleBarCollider : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-//        if (detectMinMaxLine.onTrack) { 
+        //        if (detectMinMaxLine.onTrack) { 
 
-             //sphere.GetComponent<WaypointsFree.WaypointsTraveler>().MoveSpeed = gameControllerScript.BikeSpeed / 3.6f;
-            //Debug.Log("bikespeed / 3.6: " + gameControllerScript.BikeSpeed / 3.6f);
+        //sphere.GetComponent<WaypointsFree.WaypointsTraveler>().MoveSpeed = gameControllerScript.BikeSpeed / 3.6f;
+        //Debug.Log("bikespeed / 3.6: " + gameControllerScript.BikeSpeed / 3.6f);
 
-            float currentSpeed = gameControllerScript.BikeSpeed / 3.6f;
+        float currentSpeed = gameControllerScript.BikeSpeed / 3.6f;
 
         //USE CODE LINES 351 - 362 FOR LANE KEEPING 
 
-      /*
-            if (detectMinMaxLine.distanceBetweenObjects < targetDistanceThreshold)
-            {
-                // If the distance is greater than the threshold, increase the speed
-                float speedMultiplier = 1.2f; // Adjust this multiplier as needed
-                sphere.GetComponent<WaypointsFree.WaypointsTraveler>().MoveSpeed = currentSpeed * speedMultiplier;
-            }
-            else
-            {
-                // If the distance is less than the threshold, decrease the speed
-                float speedMultiplier = 0.8f; // Adjust this multiplier as needed
-                sphere.GetComponent<WaypointsFree.WaypointsTraveler>().MoveSpeed = currentSpeed * speedMultiplier;
-            }
-   */
-       
+        /*
+              if (detectMinMaxLine.distanceBetweenObjects < targetDistanceThreshold)
+              {
+                  // If the distance is greater than the threshold, increase the speed
+                  float speedMultiplier = 1.2f; // Adjust this multiplier as needed
+                  sphere.GetComponent<WaypointsFree.WaypointsTraveler>().MoveSpeed = currentSpeed * speedMultiplier;
+              }
+              else
+              {
+                  // If the distance is less than the threshold, decrease the speed
+                  float speedMultiplier = 0.8f; // Adjust this multiplier as needed
+                  sphere.GetComponent<WaypointsFree.WaypointsTraveler>().MoveSpeed = currentSpeed * speedMultiplier;
+              }
+     */
+
         // USE CODE LINES 366 - 377 FOR LANECENTERING
-       
-      
-            if (laneCenteringAlwaysActive.distanceBetweenObjects < targetDistanceThreshold)
-            {
-                // If the distance is greater than the threshold, increase the speed
-                float speedMultiplier = 1.2f; // Adjust this multiplier as needed
-                sphere.GetComponent<WaypointsFree.WaypointsTraveler>().MoveSpeed = currentSpeed * speedMultiplier;
-            }
-            else
-            {
-                // If the distance is less than the threshold, decrease the speed
-                float speedMultiplier = 0.8f; // Adjust this multiplier as needed
-                sphere.GetComponent<WaypointsFree.WaypointsTraveler>().MoveSpeed = currentSpeed * speedMultiplier;
-            }
-       
-     
-       //}
+
+
+        if (laneCenteringAlwaysActive.distanceBetweenObjects < targetDistanceThreshold)
+        {
+            // If the distance is greater than the threshold, increase the speed
+            float speedMultiplier = 1.2f; // Adjust this multiplier as needed
+            sphere.GetComponent<WaypointsFree.WaypointsTraveler>().MoveSpeed = currentSpeed * speedMultiplier;
+        }
+        else
+        {
+            // If the distance is less than the threshold, decrease the speed
+            float speedMultiplier = 0.8f; // Adjust this multiplier as needed
+            sphere.GetComponent<WaypointsFree.WaypointsTraveler>().MoveSpeed = currentSpeed * speedMultiplier;
+        }
+
+
+        //}
 
         if (!camIsSet)
         {
@@ -424,7 +307,8 @@ public class HandleBarCollider : MonoBehaviour
 
         }
 
-        if (Input.GetKeyDown("a")) {
+        if (Input.GetKeyDown("a"))
+        {
 
             String filepath1 = "C:/Users/Bikelab/Desktop/Logfiles/";
             filepath1 = filepath1 + participantID + "_" + timeStamp + ".csv";
@@ -433,7 +317,7 @@ public class HandleBarCollider : MonoBehaviour
 
             Debug.Log("A press");
 
-            addData(BusMode, BusPrediction, busPredictionCollisions, busCollide, currentCondition, timerStarted, roundTime, participantID, ballCounter, ballIndex, ballDistanceMin, ballDistanceMinVelocity, ballDistanceMinSteeringAngle, bikemodel, distractionTask, lanekeeping, lanecentering, keypress, @filepath1);
+            addData(currentCondition, timerStarted, roundTime, participantID, ballCounter, ballIndex, ballDistanceMin, ballDistanceMinVelocity, ballDistanceMinSteeringAngle, bikemodel, distractionTask, lanekeeping, lanecentering, keypress, @filepath1);
 
             keypress = false;
         }
@@ -446,7 +330,7 @@ public class HandleBarCollider : MonoBehaviour
         //Application.Quit();
     }
 
-    public static void addData(bool busMode, bool busPrediction, int[] predictionbussesHit, int[] bussesHit, Condition currentCondition, bool isStarted, float roundTime, string participantid, int nr, int ballIndex, float ObjectOffset, float Velocity, float StearingAngle,Bike bikemodel, DistractionTask distraction,bool lanekeeping, bool lanecentering , bool keypress, string Filepath)
+    public static void addData(Condition currentCondition, bool isStarted, float roundTime, string participantid, int nr, int ballIndex, float ObjectOffset, float Velocity, float StearingAngle, Bike bikemodel, DistractionTask distraction, bool lanekeeping, bool lanecentering, bool keypress, string Filepath)
     {
         try
         {
@@ -455,7 +339,6 @@ public class HandleBarCollider : MonoBehaviour
 
                 if (!isStarted && roundTime > 0)
                 {
-                    //file.WriteLine("PredFrontBus1: " + predictionbussesHit[0] + ", PredBackBus1: " + predictionbussesHit[1] + ", PredFrontBus2: " + predictionbussesHit[2] + ", PredBackBus2: " + predictionbussesHit[3] + ", PredFrontBus4: " + predictionbussesHit[4] + ", PredBackBus4: " + predictionbussesHit[5] + ", PredFrontBus5: " + predictionbussesHit[6] + ", PredBackBus5: " + predictionbussesHit[7] + ", Bus1Collide: " + bussesHit[0] + ", Bus2Collide: " + bussesHit[1] + ", Bus4Collide: " + bussesHit[2] + ", Bus5Collide: " + bussesHit[3]);
                     //file.WriteLine("BallCounter: " + nr + ", RoundTime: " + roundTime + ", Participantid: " + participantid + ", Condition: " + currentCondition.ToString() + ", Traffic: " + busMode + ", TrafficPrediction: " + busPrediction + ", Bikemodel: " + bikemodel);
                     file.WriteLine("BallCounter: " + nr + ", RoundTime: " + roundTime + ", TotalNumber7Count: " + distraction.number7Count + ", NumberInViewTime: " + distraction.numberInViewTime + ", NumberOutOfViewTime: " + distraction.numberOutOfViewTime + ", Participantid: " + participantid + ", LaneKeeping: " + lanekeeping + ",LaneCentering: " + lanecentering);
                 }
@@ -464,7 +347,8 @@ public class HandleBarCollider : MonoBehaviour
                     file.WriteLine("BallIndex: " + ballIndex + ", ObjectOffset: " + ObjectOffset + ", Velocity: " + Velocity + ", StearingAngle: " + StearingAngle);
                 }
 
-                if (keypress == true) {
+                if (keypress == true)
+                {
 
                     Debug.Log("A press write");
                     file.WriteLine("BallCounter: " + nr + ", RoundTime: " + roundTime + ", TotalNumber7Count: " + distraction.number7Count + ", NumberInViewTime: " + distraction.numberInViewTime + ", NumberOutOfViewTime: " + distraction.numberOutOfViewTime + ", Participantid: " + participantid + ", LaneKeeping: " + lanekeeping + ",LaneCentering: " + lanecentering);
