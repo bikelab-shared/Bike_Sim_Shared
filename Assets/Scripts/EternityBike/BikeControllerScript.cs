@@ -110,7 +110,8 @@ public class BikeControllerScript : MonoBehaviour
                 #endregion
 
                 ApplySteering();
-                ApplyVisualTilting();
+                ApplyBikeVisualTilting();
+                ApplyCameraVisualTilting();
                 MoveBikeAlongTurn();
             }
         }
@@ -142,7 +143,7 @@ public class BikeControllerScript : MonoBehaviour
         handlebar.transform.localEulerAngles = steeringVec;
     }
 
-    private void ApplyVisualTilting()
+    private void ApplyBikeVisualTilting()
     {
         float tiltFactor = gameControllerScript.RollMultiplier;
         float tiltAngle = -gameControllerScript.ITiltAngle;
@@ -153,6 +154,20 @@ public class BikeControllerScript : MonoBehaviour
             transform.localEulerAngles = Vector3.Lerp(transform.localEulerAngles, targetTilt, Time.deltaTime * 5f);
         }
     }
+
+    private void ApplyCameraVisualTilting()
+    {
+        float tiltAngle = -gameControllerScript.ITiltAngle; // invert if needed for correct direction
+        float tiltSpeed = 5f; // adjust for smoothness
+
+        if (Camera != null)
+        {
+            Vector3 currentEuler = Camera.transform.localEulerAngles;
+            Vector3 targetEuler = new Vector3(currentEuler.x, currentEuler.y, tiltAngle);
+            Camera.transform.localEulerAngles = Vector3.Lerp(currentEuler, targetEuler, Time.deltaTime * tiltSpeed);
+        }
+    }
+
 
     private void MoveBikeAlongTurn()
     {
