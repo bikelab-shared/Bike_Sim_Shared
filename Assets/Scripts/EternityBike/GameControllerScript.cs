@@ -17,7 +17,12 @@ public class GameControllerScript : MonoBehaviour
     public enum RealismSupportLevel { OptimizedSupport, NoSupport, FullSupport };
     public RealismSupportLevel currentRealismSupportLevel;
 
-    public enum VisualTiltingMode { SynchronisedTilting, NoTilting}
+    public enum VisualTiltingMode
+    {
+        Disabled,
+        SynchronisedTilting,
+        TestRightLeft45
+    }
     public VisualTiltingMode currentVisualTiltingMode;
 
     public enum UserBikeStopMode { AutoStop, ManuStop };   // different stop modes for eternity bike, AutoStop for cruise control and ManuStop for baseline mode
@@ -64,6 +69,11 @@ public class GameControllerScript : MonoBehaviour
     public float supportFactor = 0.0f;
     public float speedCalculationMultiplier = 0.6f;
     public float speedCalculationExponent = 1.7f;
+
+    [Range(0f, 10f)]
+    public float visualTiltMultiplier = 1.0f;
+    [Range(1f, 10f)]
+    public float visualTiltSpeed = 1.0f;
     #endregion
 
     #region GameObjects
@@ -786,7 +796,11 @@ public class RealismPlatformCalculationModel : ApproximatedPlatformCalculationMo
 
         //ITiltAngle = realisticITiltAngleFactor * RollPosition / PLATFORM_POSITION_LOGIC_MAX;
         //ITiltAngle = calculatedTiltAngle;
-        //Debug.LogWarning("ITiltAngle: " + ITiltAngle);
+        if(platform.activateCalculationLogging)
+        {
+            Debug.Log("[I] ITiltAngle before Support: " + this.platform.ITiltAngle);
+        }
+        
 
         this.platform.ITiltAngleMax = this.platform.ITiltAngle;
 
@@ -801,6 +815,11 @@ public class RealismPlatformCalculationModel : ApproximatedPlatformCalculationMo
         else if (this.platform.currentRealismSupportLevel == GameControllerScript.RealismSupportLevel.NoSupport)
         {
             this.platform.ITiltAngle = 0;
+        }
+
+        if (platform.activateCalculationLogging)
+        {
+            Debug.Log("[I] ITiltAngle after Support: " + this.platform.ITiltAngle);
         }
 
         return RollPosition * this.platform.custom_rollMultipliers[this.platform.custom_rollMultiplierInd];

@@ -11,8 +11,9 @@ public class BikeControllerScript : MonoBehaviour
 
     public GameObject BikeBase;
     public GameObject HandleBar;
-    public GameObject Camera;
     public GameObject leftController;
+    public GameObject Camera;
+    [SerializeField] private GameObject visualTiltTarget;
 
     private Transform handlebar;
     private Vector3 initialHandlebarPosition;
@@ -99,17 +100,42 @@ public class BikeControllerScript : MonoBehaviour
 
     private void ApplyVisualTiltingCamera()
     {
-        float tiltAngle = -gameControllerScript.ITiltAngle; // invert if needed for correct direction
-        float tiltSpeed = 5f; // adjust for smoothness
+        float visualTiltAngle = -(gameControllerScript.ITiltAngle) * gameControllerScript.visualTiltMultiplier * 1000;
 
-        if (Camera != null)
+        // --- TEST MODE: Force 45° left/right tilt based on sign ---
+        if (gameControllerScript.currentVisualTiltingMode == GameControllerScript.VisualTiltingMode.TestRightLeft45)
         {
-            Vector3 currentEuler = Camera.transform.localEulerAngles;
-            Vector3 targetEuler = new Vector3(currentEuler.x, currentEuler.y, tiltAngle);
-            Camera.transform.localEulerAngles = Vector3.Lerp(currentEuler, targetEuler, Time.deltaTime * tiltSpeed);
+            if (gameControllerScript.ITiltAngle > 0)
+            {
+                visualTiltAngle = -(gameControllerScript.supportedAngle);
+            }
+                
+            else if (gameControllerScript.ITiltAngle < 0)
+            {
+                visualTiltAngle = gameControllerScript.supportedAngle;
+                        
+            }
+            else
+            {
+                visualTiltAngle = 0f;
+            }          
+        }
+
+        // --- Apply visual tilt to assigned target ---
+        if (gameControllerScript.currentVisualTiltingMode != GameControllerScript.VisualTiltingMode.Disabled && visualTiltTarget != null)
+        {
+            Quaternion currentRot = visualTiltTarget.transform.localRotation;
+            Quaternion targetRot = Quaternion.Euler(0f, 0f, visualTiltAngle);
+            visualTiltTarget.transform.localRotation = Quaternion.Lerp(currentRot, targetRot, Time.deltaTime * gameControllerScript.visualTiltSpeed);
+
+            Debug.Log($"[DBG] VisualTiltTarget Z-Euler: {visualTiltTarget.transform.localEulerAngles.z}");
+        }
+
+        if (gameControllerScript.activateCalculationLogging)
+        {
+            Debug.Log("[I] visualTiltAngle: " + visualTiltAngle);
         }
     }
-
 
     private void MoveBikeAlongTurn()
     {
