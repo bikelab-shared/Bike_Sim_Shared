@@ -11,7 +11,6 @@ public class BikeControllerScript : MonoBehaviour
 
     public GameObject BikeBase;
     public GameObject HandleBar;
-    public GameObject ReferenceCube;
     public GameObject Camera;
     public GameObject leftController;
 
@@ -47,11 +46,11 @@ public class BikeControllerScript : MonoBehaviour
         initialHandlebarPosition = new Vector3(handlebar.rotation.x, handlebar.rotation.y, handlebar.rotation.z);
         initalHandlebarRotation = Quaternion.Euler(new Vector3(0, 0, 0));  //Sonst wieder rein
         initialControllerRotation = leftController.transform.rotation;
-        Debug.Log("inithandle: " + initialHandlebarPosition);
         //TODO Check if Rotation is right from start
-
+        //Debug.Log("inithandle: " + initialHandlebarPosition);
+        
         handlebar_parent = handlebar.parent.name.ToString();
-        Debug.Log("parent: " + handlebar.parent);
+        //Debug.Log("parent: " + handlebar.parent);
     }
 
     void Update()
@@ -74,10 +73,12 @@ public class BikeControllerScript : MonoBehaviour
     {
         // 0 to 360 degrees
         steeringAngle = (Quaternion.Inverse(transform.rotation) * initialControllerRotation * leftController.transform.rotation * initalHandlebarRotation).eulerAngles.y;
+        /*
         Debug.LogWarning("checking formula: steeringangle before maping: " + steeringAngle);
         Debug.LogWarning("checking formula: leftcontrollerrotation: " + leftController.transform.rotation);
         Debug.LogWarning("checking formula: initialControllerRotation: " + initialControllerRotation);
         Debug.LogWarning("checking formula: initalHandlebarRotation: " + initalHandlebarRotation);
+        */
         
         if (steeringAngle > 90 && steeringAngle <= 180)
         {

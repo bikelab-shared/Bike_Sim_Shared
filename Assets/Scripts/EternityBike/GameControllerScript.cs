@@ -81,6 +81,7 @@ public class GameControllerScript : MonoBehaviour
     #endregion
 
     #region Logger
+    public bool activateCalculationLogging = false;
     float elapsed = 0f;
     bool recording = false;
     public Logger logger = new Logger();
@@ -183,6 +184,7 @@ public class GameControllerScript : MonoBehaviour
         //@levent here, it's ugly i know... i will think of something better...
         activeCalculationModelIndex = 0;
         ((RealismPlatformCalculationModel)calculationModelRegistry[activeCalculationModelIndex]).setPlatform(this);
+        calculationModelRegistry[activeCalculationModelIndex].setLogCalculations(activateCalculationLogging);
     }
     private void setRealismSupportLevel()
     {
@@ -659,6 +661,7 @@ public abstract class AbstractPlatformCalculationModel
     private readonly float minBrakeForce;
     private readonly float maxBrakeForce;
 
+    public bool logCalculations = false;
 
     public AbstractPlatformCalculationModel(
         float minTilt,
@@ -679,6 +682,11 @@ public abstract class AbstractPlatformCalculationModel
 
     public abstract String getLabel();
 
+    public void setLogCalculations(bool active)
+    {
+        this.logCalculations = active;
+    }
+
     public delegate float Calculation();
 
     public static float getResultWithinRange(float min, float max, Calculation calculation)
@@ -694,7 +702,10 @@ public abstract class AbstractPlatformCalculationModel
     public float calculateTilt(float velocity, float steeringAngle)
     {
         float ret = getResultWithinRange(minTilt, maxTilt, () => calculateTilt2(velocity, steeringAngle));
-            Debug.Log("Calculated Tilt: " + ret);
+        if (logCalculations)
+        {
+            Debug.Log("[I] Calculated Tilt: " + ret);
+        }
         return ret;
     }
 
@@ -703,7 +714,10 @@ public abstract class AbstractPlatformCalculationModel
     public float calculatePitch(Vector3 bikeForward, float brakeForce)
     {
         var ret = getResultWithinRange(minPitch, maxPitch, () => calculatePitch2(bikeForward, brakeForce));
-        Debug.Log("Calculated Pitch: " + ret);
+        if(logCalculations)
+        {
+            Debug.Log("[I] Calculated Pitch: " + ret);
+        }
         return ret;
     }
 
@@ -712,7 +726,10 @@ public abstract class AbstractPlatformCalculationModel
     public float calculateBreakForce(float bikeSpeed, float combinedBrakeForce)
     {
         var ret = getResultWithinRange(minBrakeForce, maxBrakeForce, () => calculateBreakForce2(bikeSpeed, combinedBrakeForce));
-        Debug.Log("Calculated Brakeforce: " + ret);
+        if (logCalculations)
+        {
+            Debug.Log("[I] Calculated Brakeforce: " + ret);
+        }
         return ret;
     }
     protected abstract float calculateBreakForce2(float bikeSpeed, float combinedBrakeForce);
@@ -722,7 +739,6 @@ public class RealismPlatformCalculationModel : ApproximatedPlatformCalculationMo
 {
    GameControllerScript platform;
     
-
     public RealismPlatformCalculationModel(float minTilt,
         float maxTilt,
         float minPitch,
@@ -842,7 +858,10 @@ public class ApproximatedPlatformCalculationModel : AbstractPlatformCalculationM
         float applyBrakeForce = 0;
         if (combinedBrakeForce < 20)
         {
-            Debug.Log("Ignore BrakeForce");
+            if(logCalculations)
+            {
+                Debug.Log("[I] Ignore BrakeForce: " + combinedBrakeForce);
+            }
         }
         else
         {
