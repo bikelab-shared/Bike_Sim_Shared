@@ -16,6 +16,7 @@ A Unity-based VR cycling simulator integrating a physical bike setup, Tacx train
 
 - `T` – Cycle Platform Tilt Models
 - `Z` – Toggle Data Logging
+- `R` – Reset Scene
 
 ## 🧩 Structure Overview
 
