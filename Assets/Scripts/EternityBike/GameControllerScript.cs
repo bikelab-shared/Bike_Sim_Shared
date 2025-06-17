@@ -21,7 +21,7 @@ public class GameControllerScript : MonoBehaviour
     {
         Disabled,
         SynchronisedTilting,
-        TestRightLeft45
+        TestMode
     }
     public VisualTiltingMode currentVisualTiltingMode;
 
@@ -70,9 +70,9 @@ public class GameControllerScript : MonoBehaviour
     public float speedCalculationMultiplier = 0.6f;
     public float speedCalculationExponent = 1.7f;
 
-    [Range(0f, 10f)]
+    [Range(0f, 1f)]
     public float visualTiltMultiplier = 1.0f;
-    [Range(1f, 10f)]
+    [Range(0.5f, 2f)]
     public float visualTiltSpeed = 1.0f;
     #endregion
 

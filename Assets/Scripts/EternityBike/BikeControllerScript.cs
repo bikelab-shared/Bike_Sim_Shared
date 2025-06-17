@@ -103,7 +103,7 @@ public class BikeControllerScript : MonoBehaviour
         float visualTiltAngle = -(gameControllerScript.ITiltAngle) * gameControllerScript.visualTiltMultiplier * 1000;
 
         // --- TEST MODE: Force 45° left/right tilt based on sign ---
-        if (gameControllerScript.currentVisualTiltingMode == GameControllerScript.VisualTiltingMode.TestRightLeft45)
+        if (gameControllerScript.currentVisualTiltingMode == GameControllerScript.VisualTiltingMode.TestMode)
         {
             if (gameControllerScript.ITiltAngle > 0)
             {
@@ -127,8 +127,6 @@ public class BikeControllerScript : MonoBehaviour
             Quaternion currentRot = visualTiltTarget.transform.localRotation;
             Quaternion targetRot = Quaternion.Euler(0f, 0f, visualTiltAngle);
             visualTiltTarget.transform.localRotation = Quaternion.Lerp(currentRot, targetRot, Time.deltaTime * gameControllerScript.visualTiltSpeed);
-
-            Debug.Log($"[DBG] VisualTiltTarget Z-Euler: {visualTiltTarget.transform.localEulerAngles.z}");
         }
 
         if (gameControllerScript.activateCalculationLogging)
