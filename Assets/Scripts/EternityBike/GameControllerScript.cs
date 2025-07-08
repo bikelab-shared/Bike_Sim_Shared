@@ -14,6 +14,8 @@ public class GameControllerScript : MonoBehaviour
 {
     #region EternityBike-Modes
 
+    public GameObject selectedCondition;
+
     public enum RealismSupportLevel { OptimizedSupport, NoSupport, FullSupport };
     public RealismSupportLevel currentRealismSupportLevel;
 
@@ -182,11 +184,35 @@ public class GameControllerScript : MonoBehaviour
 
     void Start()
     {
+        ApplySelectedCondition();
         setCalculationModel();
         setUduinoEvent();
         setRealismSupportLevel();
         setFSMI();
         setGameObjects();
+    }
+
+    private void ApplySelectedCondition()
+    {
+        GameObject bike = GameObject.Find("EternityBike");
+
+        if (bike == null || selectedCondition == null)
+        {
+            Debug.LogError("Bike or selected condition not found.");
+            return;
+        }
+
+        var def = selectedCondition.GetComponent<ConditionDefinition>();
+
+        if (def != null)
+        {
+            def.ApplyToBike(bike, this);
+            Debug.Log("[Condition] Loaded: " + selectedCondition.name);
+        }
+        else
+        {
+            Debug.LogWarning("No ConditionDefinition found on selected object.");
+        }
     }
 
     private void setCalculationModel()
