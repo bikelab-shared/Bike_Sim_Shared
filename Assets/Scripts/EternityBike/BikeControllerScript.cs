@@ -60,6 +60,7 @@ public class BikeControllerScript : MonoBehaviour
         {
             var rgb = this.GetComponent<Rigidbody>();
             rgb.velocity = (transform.forward * gameControllerScript.BikeSpeed) * (Time.deltaTime * 2f);
+            ApplyBreakForce(rgb);
 
             if (handlebar != null)
             {
@@ -67,6 +68,24 @@ public class BikeControllerScript : MonoBehaviour
                 ApplyVisualTiltingCamera();
                 MoveBikeAlongTurn();
             }
+        }
+    }
+
+    private void ApplyBreakForce(Rigidbody rgb)
+    {
+        float brakeForce = gameControllerScript.appliedBrakeForce;
+
+        if (brakeForce > 0f)
+        {
+            // Reduce current velocity in forward direction
+            Vector3 currentVel = rgb.velocity;
+            Vector3 brakeDir = -currentVel.normalized * brakeForce * Time.deltaTime;
+
+            rgb.velocity += brakeDir;
+
+            // Optional clamp: don't reverse
+            if (Vector3.Dot(rgb.velocity, transform.forward) < 0)
+                rgb.velocity = Vector3.zero;
         }
     }
 
