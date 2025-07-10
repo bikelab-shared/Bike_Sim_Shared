@@ -54,13 +54,12 @@ public class BikeControllerScript : MonoBehaviour
         //Debug.Log("parent: " + handlebar.parent);
     }
 
-    void Update()
+    void FixedUpdate()
     {
         if (BikeBase != null)
         {
             var rgb = this.GetComponent<Rigidbody>();
-            rgb.velocity = (transform.forward * gameControllerScript.BikeSpeed) * (Time.deltaTime * 2f);
-            ApplyBreakForce(rgb);
+            ApplyBikeMotion(rgb);
 
             if (handlebar != null)
             {
@@ -71,21 +70,37 @@ public class BikeControllerScript : MonoBehaviour
         }
     }
 
-    private void ApplyBreakForce(Rigidbody rgb)
+    private void ApplyBikeMotion(Rigidbody rgb)
     {
+        float targetSpeed = gameControllerScript.BikeSpeed / 3.6f; // km/h to m/s
+        float currentSpeed = rgb.velocity.magnitude;
         float brakeForce = gameControllerScript.appliedBrakeForce;
 
-        if (brakeForce > 0f)
+        Vector3 forward = transform.forward;
+        Vector3 currentDir = rgb.velocity.normalized;
+
+        // --- Apply Acceleration ---
+        if (targetSpeed > currentSpeed && brakeForce == 0f)
         {
-            // Reduce current velocity in forward direction
-            Vector3 currentVel = rgb.velocity;
-            Vector3 brakeDir = -currentVel.normalized * brakeForce * Time.deltaTime;
+            float accel = 2.5f; // Tune acceleration
+            float speedGain = accel * Time.fixedDeltaTime;
+            float newSpeed = Mathf.Min(currentSpeed + speedGain, targetSpeed);
+            rgb.velocity = forward * newSpeed;
+        }
 
-            rgb.velocity += brakeDir;
+        // --- Apply Braking ---
+        else if (brakeForce > 0f)
+        {
+            float deceleration = brakeForce * 3f; // Tune this multiplier
+            float speedDrop = deceleration * Time.fixedDeltaTime;
+            float newSpeed = Mathf.Max(currentSpeed - speedDrop, 0f);
+            rgb.velocity = currentDir * newSpeed;
+        }
 
-            // Optional clamp: don't reverse
-            if (Vector3.Dot(rgb.velocity, transform.forward) < 0)
-                rgb.velocity = Vector3.zero;
+        // --- Maintain constant speed if no input ---
+        else
+        {
+            rgb.velocity = forward * targetSpeed;
         }
     }
 
@@ -119,25 +134,24 @@ public class BikeControllerScript : MonoBehaviour
 
     private void ApplyVisualTiltingCamera()
     {
-        float visualTiltAngle = -(gameControllerScript.ITiltAngle) * gameControllerScript.visualTiltMultiplier * 1000;
+        float visualTiltAngle = -(gameControllerScript.ITiltAngle) * gameControllerScript.visualTiltMultiplier * 1000f;
+
+        // --- Clamp the tilt angle to supported limits ---
+        visualTiltAngle = Mathf.Clamp(
+            visualTiltAngle,
+            -gameControllerScript.supportedAngle,
+            gameControllerScript.supportedAngle
+        );
 
         // --- TEST MODE: Force 45° left/right tilt based on sign ---
         if (gameControllerScript.currentVisualTiltingMode == GameControllerScript.VisualTiltingMode.TestMode)
         {
             if (gameControllerScript.ITiltAngle > 0)
-            {
-                visualTiltAngle = -(gameControllerScript.supportedAngle);
-            }
-                
+                visualTiltAngle = -gameControllerScript.supportedAngle;
             else if (gameControllerScript.ITiltAngle < 0)
-            {
                 visualTiltAngle = gameControllerScript.supportedAngle;
-                        
-            }
             else
-            {
                 visualTiltAngle = 0f;
-            }          
         }
 
         // --- Apply visual tilt to assigned target ---
@@ -153,6 +167,7 @@ public class BikeControllerScript : MonoBehaviour
             Debug.Log("[I] visualTiltAngle: " + visualTiltAngle);
         }
     }
+
 
     private void MoveBikeAlongTurn()
     {

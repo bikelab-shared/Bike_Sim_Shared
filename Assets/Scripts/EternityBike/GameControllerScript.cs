@@ -423,6 +423,10 @@ public class GameControllerScript : MonoBehaviour
            //TODO Quick Fix for brakes
             Debug.Log("Secondary Trigger: " + OVRInput.Axis1D.SecondaryIndexTrigger.ToString());
         }
+        if(OVRInput.Get(OVRInput.Axis2D.SecondaryThumbstick) != null)
+        {
+            //Keeps left Controller acitve
+        }
     }
 
     private void updateFSMI()
@@ -475,7 +479,7 @@ public class GameControllerScript : MonoBehaviour
         }
     }
 
-    void UBikeStop()
+    public void UBikeStop()
     {
         BikeSpeed = 0;
 
@@ -764,7 +768,7 @@ public abstract class AbstractPlatformCalculationModel
         var ret = getResultWithinRange(minBrakeForce, maxBrakeForce, () => calculateBreakForce2(bikeSpeed, combinedBrakeForce));
         if (logCalculations)
         {
-            Debug.Log("[I] Calculated Brakeforce: " + ret);
+            Debug.LogWarning("[I] Calculated Brakeforce: " + ret);
         }
         return ret;
     }
@@ -901,7 +905,7 @@ public class ApproximatedPlatformCalculationModel : AbstractPlatformCalculationM
     protected override float calculateBreakForce2(float bikeSpeed, float combinedBrakeForce)
     {
         float applyBrakeForce = 0;
-        if (combinedBrakeForce < 20)
+        if (combinedBrakeForce < 2)
         {
             if(logCalculations)
             {
@@ -910,8 +914,8 @@ public class ApproximatedPlatformCalculationModel : AbstractPlatformCalculationM
         }
         else
         {
-            applyBrakeForce = combinedBrakeForce / 15;
-            //sollte nie vorkommen aber sicher ist sicher
+            applyBrakeForce = combinedBrakeForce;
+            //Break Force should never be negative, but just in case
             if (applyBrakeForce < 0)
             {
                 applyBrakeForce = 0;
